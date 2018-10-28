@@ -1,5 +1,43 @@
-// All units assumed [mm]
+/*
 
+Created by Atkelar, 2018-10-28
+
+OpenSCAD cable spool holder assembly idea.
+
+Design goals: 
+Simple to cut and assemble from plywood or similiar material, hence going
+for only straight cuts and joints that can be glued.
+
+Just use a single simple crossbar (="pin") to hold the spool, resting in an 
+indent on top.
+
+Use a piece of pipe/shrink tube or similar to encase the pin to avoid
+movement between the side pieces (="roller")
+
+The front crossbar might be replace by a piece of bent wire even to 
+simplify the design further...
+
+BOM-Echos:
+The render process computes some coordinates and lengths, so in order to
+cut our materials, we need to know these distances.
+
+Pin and Roller will be A=length, B=diameter
+BackPlane and Front will be A=length, B=width, C=thickness
+
+Side panel uses A-G for measurements. Refer to drawing "outline.png" 
+for details.
+
+
+
+Version history:
+
+1  - Initial release
+2  - Added "BOM" echo outputs, refer to drawing for details
+
+*/
+
+
+// All units assumed [mm]
 
 // Thickness of side material
 SideThickness = 6;
@@ -21,7 +59,7 @@ PinDiameter = 3;
 RollDiameter = 4;
 
 // backplane thickness (0 = omit backplane)
-BackPlaneThickness = 0;
+BackPlaneThickness = 3;
 
 // Diameter for the feeding hole in the front plate
 FeedDiameter = 2;
@@ -29,7 +67,7 @@ FeedDiameter = 2;
 
 // Front plate parameters
 FrontColor = "silver";
-FrontAngle = 45;   // 10-70Â°, angle from the pin to put the cross bar.
+FrontAngle = 45;   // 10-70°, angle from the pin to put the cross bar.
 
 
 
@@ -53,11 +91,13 @@ w = width of spool
 d = diameter of spool
 dHole = inner hole diameter of the roll
 n = number of slots (spools)
+name = Name for referencing the BOM-echo output...
 
 */
 
-module SpoolHolder(loc = [0,0,0], w = 40, d = 50, dHole = 14, n = 1)
+module SpoolHolder(loc = [0,0,0], w = 40, d = 50, dHole = 14, n = 1, name="Spool")
 {
+   
     r = d / 2;
     rHole = dHole / 2;
     // compute the location for the front cross bar...
@@ -67,8 +107,8 @@ module SpoolHolder(loc = [0,0,0], w = 40, d = 50, dHole = 14, n = 1)
     if (FrontAngle < 10 || FrontAngle > 70)
         echo("FrontAngle is untested/invalid: ", FrontAngle);
     // the spool will "sag" by the hole radius minus the roll radius...
-    frontX = cos(FrontAngle) * rDistance + rHole - (RollDiameter / 2);
-    frontY = sin(FrontAngle) * rDistance;
+    frontX = ceil(cos(FrontAngle) * rDistance + rHole - (RollDiameter / 2));
+    frontY = ceil(sin(FrontAngle) * rDistance);
     //echo("X=",frontX, " Y=",frontY);
     
     // Calculate full width, based on number of spools...
@@ -167,7 +207,7 @@ module SpoolHolder(loc = [0,0,0], w = 40, d = 50, dHole = 14, n = 1)
                 [SideDepth / 2 - PinDiameter / 2, -SideHeight / 2 + PinDiameter], 
                 [SideDepth / 2 - PinDiameter / 2, -SideHeight / 2] ]);
         }
-            
+        
             // front plane...
         color(FrontColor)
         {
@@ -180,6 +220,18 @@ module SpoolHolder(loc = [0,0,0], w = 40, d = 50, dHole = 14, n = 1)
                 //}
             }
         }
+
+
+        name = str(name);
+
+        echo(name,n,"Pin",n, PinWidth,PinDiameter);
+        echo(name,n,"Roller",n, RollWidth,RollDiameter);
+        if (BackPlaneThickness > 0)
+        {
+            echo(name,n,"BackPlane",1,TotalWidth,SideHeight,BackPlaneThickness);
+        }
+        echo(name,n,"Front",1,TotalWidth,FrontWidth,FrontThickness);
+        echo(name,n,"Side",n+1,SideDepth + frontY, SideHeight, SideDepth + RollDiameter, SideDepth - PinDiameter / 2, PinDiameter, FrontWidth, SideThickness);
     }
 }
 
@@ -193,21 +245,23 @@ cube([400,250,6], center=true);
 translate([250,0,-3])
 cube([450,250,6], center=true);
 
+echo("Holder","nCount","Part","Pcs","A","B","C","D","E","F","G");
+
 // small, wide: 7
-SpoolHolder(loc=[-250,-80,0],d = 50, dHole=14, w=40, n=7);
-SpoolHolder(loc=[-250,-20,0],d = 50, dHole=14, w=40, n=7);
+SpoolHolder(loc=[-250,-80,0],d = 50, dHole=14, w=40, n=7, name="small, wide");
+SpoolHolder(loc=[-250,-20,0],d = 50, dHole=14, w=40, n=7, name="small, wide");
 
 // large, narrow: 2
-SpoolHolder(loc=[370,-60,0],d = 75, dHole=14, w=20, n=6);
+SpoolHolder(loc=[370,-60,0],d = 75, dHole=14, w=20, n=6, name="larger, narrow");
 
 // small, narrow: 2
-SpoolHolder(loc=[150,-70,0],d = 55, dHole=20, w=20, n=7);
+SpoolHolder(loc=[150,-70,0],d = 55, dHole=20, w=20, n=7, name="small, narrow");
 
 // medium narrower: 1
-SpoolHolder(loc=[250,20,0],d = 50, dHole=25, w=60, n=6);
+SpoolHolder(loc=[250,20,0],d = 50, dHole=25, w=60, n=6, name="medium, narrower");
 
 // medium wide: 3
-SpoolHolder(loc=[250,100,0],d = 56, dHole=25, w=75, n=5);
+SpoolHolder(loc=[250,100,0],d = 56, dHole=25, w=75, n=5, name="medium, wide");
 
 // large, narrow: 2
-SpoolHolder(loc=[-170,90,0], d = 105, dHole=15, w=45, n=4);
+SpoolHolder(loc=[-170,90,0], d = 105, dHole=15, w=45, n=4, name="large, narrow");
