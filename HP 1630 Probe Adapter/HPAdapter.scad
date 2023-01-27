@@ -20,10 +20,13 @@ Basic dimensions:
     sockDepth = 15mm
     pinDepth = 6mm
     
-NOTE: The notches are prepared to take these connectors:
+NOTE 1: The notches are prepared to take these connectors:
 
 https://www.molex.com/molex/products/part-detail/crimp_terminals/0008550102
 
+NOTE 2: the top/bottom covers might still need some alignment pegs, but I found the screws to be enough. 
+
+NOTE 3: Hole size is set for M3 countersunk screws, the thread can be cut into the base part.
 
 */
 
